@@ -26,6 +26,9 @@
 
 #include <grpc/support/log.h>
 
+const int sun_path_len = 0;
+const int sun_path_offset = 0;
+
 void grpc_create_socketpair_if_unix(int sv[2]) {
   // TODO: Either implement this for the non-Unix socket case or make
   // sure that it is never called in any such case. Until then, leave an
@@ -54,6 +57,10 @@ void grpc_unlink_if_unix_domain_socket(const grpc_resolved_address* addr) {}
 std::string grpc_sockaddr_to_uri_unix_if_possible(
     const grpc_resolved_address* addr) {
   return "";
+}
+
+const char* grpc_sockaddr_to_path_if_possible(const struct sockaddr* addr) {
+  return NULL;
 }
 
 #endif

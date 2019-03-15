@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 #include "absl/strings/str_cat.h"
 
@@ -37,6 +38,9 @@
 #include <grpc/support/log.h>
 
 #include "src/core/lib/gpr/useful.h"
+
+const int sun_path_len = sizeof(((sockaddr_un*)nullptr)->sun_path);
+const int sun_path_offset = offsetof(sockaddr_un, sun_path);
 
 void grpc_create_socketpair_if_unix(int sv[2]) {
   GPR_ASSERT(socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == 0);
@@ -93,7 +97,8 @@ std::string grpc_sockaddr_to_uri_unix_if_possible(
     const grpc_resolved_address* resolved_addr) {
   const grpc_sockaddr* addr =
       reinterpret_cast<const grpc_sockaddr*>(resolved_addr->addr);
-  if (addr->sa_family != AF_UNIX) {
+  const char* path = grpc_sockaddr_to_path_if_possible(addr);
+  if (!path) {
     return "";
   }
   const auto* unix_addr = reinterpret_cast<const struct sockaddr_un*>(addr);
@@ -104,7 +109,12 @@ std::string grpc_sockaddr_to_uri_unix_if_possible(
             unix_addr->sun_path + 1,
             resolved_addr->len - sizeof(unix_addr->sun_family) - 1));
   }
-  return absl::StrCat("unix:", unix_addr->sun_path);
+  return absl::StrCat("unix:", path);
+}
+
+const char* grpc_sockaddr_to_path_if_possible(const struct sockaddr* addr) {
+  return (addr->sa_family == AF_UNIX) ? ((struct sockaddr_un*)addr)->sun_path
+                                      : nullptr;
 }
 
 #endif

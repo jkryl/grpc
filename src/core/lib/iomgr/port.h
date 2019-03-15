@@ -32,7 +32,9 @@
 #define GRPC_ARES_RESOLVE_LOCALHOST_MANUALLY 1
 #endif
 #if defined(GRPC_CUSTOM_SOCKET)
-// Do Nothing
+#if !defined(GPR_WINDOWS)
+#define GRPC_HAVE_UNIX_SOCKET 1
+#endif
 #elif defined(GPR_WINDOWS)
 #define GRPC_WINSOCK_SOCKET 1
 #define GRPC_WINDOWS_SOCKETUTILS 1

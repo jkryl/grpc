@@ -31,6 +31,9 @@
 
 #include "absl/strings/string_view.h"
 
+extern const int sun_path_len;
+extern const int sun_path_offset;
+
 void grpc_create_socketpair_if_unix(int sv[2]);
 
 grpc_error* grpc_resolve_unix_domain_address(
@@ -46,5 +49,7 @@ void grpc_unlink_if_unix_domain_socket(
 
 std::string grpc_sockaddr_to_uri_unix_if_possible(
     const grpc_resolved_address* resolved_addr);
+
+const char* grpc_sockaddr_to_path_if_possible(const struct sockaddr* addr);
 
 #endif /* GRPC_CORE_LIB_IOMGR_UNIX_SOCKETS_POSIX_H */

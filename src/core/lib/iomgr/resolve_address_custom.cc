@@ -89,11 +89,18 @@ void grpc_custom_resolve_callback(grpc_custom_resolver* r,
 static grpc_error* try_split_host_port(const char* name,
                                        const char* default_port,
                                        std::string* host, std::string* port) {
-  /* parse name, splitting it into host and port parts */
-  grpc_core::SplitHostPort(name, host, port);
-  if (host->empty()) {
-    return GRPC_ERROR_CREATE_FROM_COPIED_STRING(
-        absl::StrFormat("unparseable host:port: '%s'", name).c_str());
+  *port = nullptr;
+  // all hosts beginning with / are treated as unix domain sockets
+  if (name[0] == 'u' && name[1] == 'n' && name[2] == 'i' && name[3] == 'x' &&
+      name[4] == ':' && name[5] != 0) {
+    *host = name + 5;
+  } else {
+    /* parse name, splitting it into host and port parts */
+    grpc_core::SplitHostPort(name, host, port);
+    if (host->empty()) {
+      return GRPC_ERROR_CREATE_FROM_COPIED_STRING(
+          absl::StrFormat("unparseable host:port: '%s'", name).c_str());
+    }
   }
   if (port->empty()) {
     // TODO(murgatroid99): add tests for this case
